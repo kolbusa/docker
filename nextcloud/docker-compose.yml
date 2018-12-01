@@ -1,0 +1,21 @@
+version: "2"
+
+services:
+  ssl:
+    image: nginx:stable
+    restart: always
+    volumes:
+      - ./ssl:/etc/nginx/conf.d
+    ports:
+      - "443:443"
+    depends_on:
+      - "nextcloud"
+
+  nextcloud:
+    image: nextcloud:stable
+    restart: always
+    volumes:
+      - ./nextcloud/data:/var/www/html/data
+      - ./nextcloud/config:/var/www/html/config
+
+# vim:ft=yaml autoindent

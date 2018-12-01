@@ -1,0 +1,13 @@
+version: "2"
+
+services:
+  devspace:
+    image: devspace
+    restart: always
+    volumes:
+      - ./home:/home/rsdubtso
+    ports:
+      - "9940:22"
+      - "5901:5901"
+
+# vim:ft=yaml autoindent ts=2 sw=2 et

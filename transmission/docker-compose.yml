@@ -1,0 +1,19 @@
+version: "2"
+
+services:
+  transmission:
+    image: linuxserver/transmission
+    restart: always
+    volumes:
+      - ./config:/config
+      - ./downloads:/downloads
+    environment:
+      - PGID=1102
+      - PUID=1102
+    ports:
+      - "9091:9091"
+      - "51413:51413"
+      - "51413:51413/udp"
+
+
+# vim:ft=yaml autoindent ts=2 sw=2 et
