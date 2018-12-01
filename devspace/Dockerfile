@@ -1,7 +1,11 @@
 FROM fedora:latest
 
-ENV DISPLAY=:1 \
-        VNC_PORT=5901
+ENV DISPLAY=:1
+ENV VNC_PORT=5901
+
+ARG UID=1000
+ARG GID=1000
+
 EXPOSE $VNC_PORT
 EXPOSE 22
 
@@ -58,14 +62,15 @@ RUN dnf install -y \
                 xdg-utils \
                 xz
 
-RUN useradd -u 1000 rsdubtso
+RUN getent group ${GID} || groupadd -g ${GID} rsdubtso
+RUN useradd -u ${UID} -g ${GID} rsdubtso
 COPY launch.sh /launch.sh
-RUN chown 1000:1000 -R /launch.sh
+RUN chown ${UID}:${GID} -R /launch.sh
 RUN chmod 755 -R /launch.sh
 RUN echo "rsdubtso ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/rsdubtso
 VOLUME /home/rsdubtso
 WORKDIR /home/rsdubtso
-USER 1000
+USER ${UID}
 
 CMD ["/launch.sh"]
 
