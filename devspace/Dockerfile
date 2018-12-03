@@ -57,6 +57,7 @@ RUN dnf install -y \
                 sudo \
                 tar \
                 tigervnc-server \
+                tmux \
                 urw-base35-fonts \
                 which \
                 xdg-utils \
