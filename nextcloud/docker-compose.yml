@@ -1,21 +1,53 @@
 version: "2"
 
 services:
-  ssl:
-    image: nginx:stable
-    restart: always
-    volumes:
-      - ./ssl:/etc/nginx/conf.d
-    ports:
-      - "8443:443"
-    depends_on:
-      - "nextcloud"
+    ssl:
+        image: nginx:stable
+        restart: unless-stopped
+        volumes:
+            - ./ssl:/etc/nginx/conf.d:ro
+        ports:
+            - "8443:443"
 
-  nextcloud:
-    image: nextcloud:stable
-    restart: always
-    volumes:
-      - ./nextcloud/data:/var/www/html/data
-      - ./nextcloud/config:/var/www/html/config
+    db:
+        image: mariadb
+        restart: unless-stopped
+        volumes:
+            - ./db/db:/var/lib/mysql
+            - ./db/mariadb.conf.d:/etc/mysql/mariadb.conf.d
+        environment:
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
 
-# vim:ft=yaml autoindent
+    redis:
+        image: redis
+        restart: unless-stopped
+
+    nextcloud:
+        image: nextcloud:latest
+        restart: unless-stopped
+        volumes:
+            - ./nextcloud:/var/www/html
+        depends_on:
+            - redis
+            - db
+
+    nextcloud-cron:
+        image: nextcloud:latest
+        restart: unless-stopped
+        volumes:
+          - ./nextcloud:/var/www/html
+        depends_on:
+          - nextcloud
+        entrypoint: |
+          bash -c 'bash -s <<EOF
+          trap "break; exit" SIGHUP SIGINT SIGTERM
+          while /bin/true; do
+            su -s "/bin/bash" -c "/usr/local/bin/php /var/www/html/cron.php" www-data
+            su -s "/bin/bash" -c "/usr/local/bin/php /var/www/html/occ preview:pre-generate" www-data
+            echo $$(date) - Running cron finished
+            sleep 900
+          done
+          EOF'
+
+# vim:ft=yaml autoindent ts=4 sw=4 et
