@@ -27,27 +27,19 @@ services:
         image: nextcloud:latest
         restart: unless-stopped
         volumes:
-            - ./nextcloud:/var/www/html
+            - ./nextcloud/config:/var/www/html/config
+            - ./nextcloud/data:/var/www/html/data
         depends_on:
             - redis
             - db
 
-    nextcloud-cron:
-        image: nextcloud:latest
+    nextcloud-webcron:
+        image: cw1900/docker-webcron:latest
         restart: unless-stopped
-        volumes:
-          - ./nextcloud:/var/www/html
+        environment:
+            - INTERVAL_TIME=900
+            - URL=https://dubtsov.net/owncloud/cron.php
         depends_on:
-          - nextcloud
-        entrypoint: |
-          bash -c 'bash -s <<EOF
-          trap "break; exit" SIGHUP SIGINT SIGTERM
-          while /bin/true; do
-            su -s "/bin/bash" -c "/usr/local/bin/php /var/www/html/cron.php" www-data
-            su -s "/bin/bash" -c "/usr/local/bin/php /var/www/html/occ preview:pre-generate" www-data
-            echo $$(date) - Running cron finished
-            sleep 900
-          done
-          EOF'
+            - nextcloud
 
 # vim:ft=yaml autoindent ts=4 sw=4 et
