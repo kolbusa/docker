@@ -1,31 +1,34 @@
-FROM fedora:latest
+FROM fedora:31
 
 ENV DISPLAY=:1
 ENV VNC_PORT=5901
-
-ARG UID=1000
-ARG GID=1000
 
 EXPOSE $VNC_PORT
 EXPOSE 22
 
 RUN dnf install -y \
                 audit \
+                autoconf \
+                automake \
+                dejavu-sans-fonts \
+                dejavu-sans-mono-fonts \
+                dejavu-serif-fonts \
                 desktop-file-utils \
                 dnf \
+                docbook-style-xsl \
                 dosfstools \
-                dejavu-sans-fonts \
-                dejavu-serif-fonts \
-                dejavu-sans-mono-fonts \
-                f29-backgrounds-extras-mate \
-                fedora-release-matecompiz \
+                f31-backgrounds-extras-mate \
                 file \
                 findutils \
                 firefox \
                 gcc \
                 git \
+                hostname \
                 iproute \
+                iputils \
+                libX11-devel \
                 lz4 \
+                man \
                 marco \
                 mate-applets \
                 mate-backgrounds \
@@ -54,24 +57,26 @@ RUN dnf install -y \
                 rootfiles \
                 rpm \
                 slick-greeter-mate \
+                strace \
                 sudo \
                 tar \
                 tigervnc-server \
                 tmux \
+                traceroute \
                 urw-base35-fonts \
                 which \
                 xdg-utils \
                 xz
 
-RUN getent group ${GID} || groupadd -g ${GID} rsdubtso
-RUN useradd -u ${UID} -g ${GID} rsdubtso
+RUN getent group 100 || groupadd -g 100 rsdubtso
+RUN useradd -u 1026 -g 100 rsdubtso
 COPY launch.sh /launch.sh
-RUN chown ${UID}:${GID} -R /launch.sh
+RUN chown 1026:100 -R /launch.sh
 RUN chmod 755 -R /launch.sh
 RUN echo "rsdubtso ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/rsdubtso
 VOLUME /home/rsdubtso
 WORKDIR /home/rsdubtso
-USER ${UID}
+USER 1026
 
 CMD ["/launch.sh"]
 

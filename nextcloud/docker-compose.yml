@@ -38,7 +38,7 @@ services:
         restart: unless-stopped
         environment:
             - INTERVAL_TIME=900
-            - URL=https://dubtsov.net/owncloud/cron.php
+            - URL=-k https://cloud.dubtsov.net/cron.php
         depends_on:
             - nextcloud
 
