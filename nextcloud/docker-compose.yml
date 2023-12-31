@@ -1,16 +1,32 @@
 version: "2"
 
 services:
-    ssl:
+    nginx-proxy:
         image: nginx:stable
         restart: unless-stopped
         volumes:
-            - ./ssl:/etc/nginx/conf.d:ro
+            - ./nginx-proxy/conf:/etc/nginx/conf.d:ro
+            - ./nginx-proxy/certs:/etc/nginx/certs:ro
+            - ./certbot/conf:/etc/letsencrypt:ro
+            - ./certbot/www:/var/www/certbot:ro
         ports:
             - "8443:443"
+            - "8080:80"
+        depends_on:
+            - nextcloud
+
+    certbot:
+        image: certbot/certbot:latest
+        restart: "no"
+        depends_on:
+            - nginx-proxy
+        volumes: 
+            - ./certbot/conf:/etc/letsencrypt:rw
+            - ./certbot/www:/var/www/certbot:rw
+        command: certonly -v --webroot -w /var/www/certbot --force-renewal --email dubtsov@gmail.com -d cloud.dubtsov.net -d www.dubtsov.net -d dubtsov.net --agree-tos
 
     db:
-        image: mariadb
+        image: mariadb:11.0
         restart: unless-stopped
         volumes:
             - ./db/db:/var/lib/mysql
@@ -20,7 +36,7 @@ services:
             - MYSQL_DATABASE=${MYSQL_DATABASE}
 
     redis:
-        image: redis
+        image: redis:latest
         restart: unless-stopped
 
     nextcloud:
